@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Upload</title>
+    <link rel="stylesheet" type="text/css" href="student.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="jobapplications.html">Job Profiles</a></li>
+            
+            <li><a href="resumeupload.html">Resume Upload</a></li>
+            <li><a href="index.html">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="centered-card">
+        <h2>Upload Your Resume</h2>
+        <p>Upload your resume in PDF format (maximum size: 10MB).</p>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="resume">Choose your resume (PDF only):</label>
+            <input type="file" id="resume" name="resume" accept=".pdf" required>
+            <br><br>
+            <button type="submit">Upload Resume</button>
+        </form>
+
+        <div id="uploadedInfo" style="display:none;">
+            <h3>Uploaded Resume:</h3>
+            <p id="resumeName"></p>
+        </div>
+
+        <div id="errorMessage" style="color: red; display: none;">
+            <p>The file size exceeds the 10MB limit. Please upload a smaller file.</p>
+        </div>
+    </div>
+
+    <script>
+        const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+        document.getElementById("uploadForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById("resume");
+            const file = fileInput.files[0];
+
+            if (file && file.type === "application/pdf") {
+                if (file.size > MAX_FILE_SIZE) {
+                    document.getElementById("errorMessage").style.display = "block";
+                    return;
+                } else {
+                    document.getElementById("errorMessage").style.display = "none";
+                }
+
+                const formData = new FormData();
+                formData.append("resume", file);
+
+                // Send the file to the server
+                fetch('http://localhost:8080/upload', {  // Make sure the server is running on port 3000
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("uploadedInfo").style.display = "block";
+                        document.getElementById("resumeName").textContent = "File name: " + file.name;
+                    } else {
+                        alert("Failed to upload file.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Error uploading file.");
+                });
+            } else {
+                alert("Please upload a valid PDF file.");
+            }
+        });
+    </script>
+</body>
+</html>
